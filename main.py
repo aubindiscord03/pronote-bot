@@ -2,8 +2,6 @@ from playwright.sync_api import sync_playwright
 import os
 
 URL = os.getenv("PRONOTE_URL")
-USERNAME = os.getenv("PRONOTE_USER")
-PASSWORD = os.getenv("PRONOTE_PASS")
 
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)
@@ -11,18 +9,12 @@ with sync_playwright() as p:
 
     page.goto(URL)
 
-    # attendre chargement
-    page.wait_for_timeout(3000)
+    # screenshot pour debug
+    page.screenshot(path="debug.png")
 
-    # remplir identifiant
-    page.fill('input[type="text"]', USERNAME)
+    print("Screenshot pris")
 
-    # remplir mot de passe
-    page.fill('input[type="password"]', PASSWORD)
-
-    # cliquer sur connexion
-    page.click('button')
-
+    browser.close()
     page.wait_for_timeout(5000)
 
     print("Connecté à PRONOTE")
