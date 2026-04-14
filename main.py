@@ -1,45 +1,30 @@
-from pronotepy import Client
-import requests
-import json
+from playwright.sync_api import sync_playwright
 import os
 
-# CONFIG
-URL = "https://2470002k.index-education.net/pronote/"
-USERNAME = "aubin.gonzalez@mylfigp.org"
-PASSWORD = "Katell1980!!"
+URL = os.getenv("PRONOTE_URL")
+USERNAME = os.getenv("PRONOTE_USER")
+PASSWORD = os.getenv("PRONOTE_PASS")
 
-TOKEN = "8749087089:AAE8hkO3HHx8nMyolwwd7YekeAZ_OU-jo48"
-CHAT_ID = "6391025631"
+with sync_playwright() as p:
+    browser = p.chromium.launch(headless=True)
+    page = browser.new_page()
 
-DATA_FILE = "data.json"
+    page.goto(URL)
 
-def send(msg):
-    requests.get(f"https://api.telegram.org/bot{TOKEN}/sendMessage",
-                 params={"chat_id": CHAT_ID, "text": msg})
+    # attendre chargement
+    page.wait_for_timeout(3000)
 
-def load_old():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r") as f:
-            return json.load(f)
-    return []
+    # remplir identifiant
+    page.fill('input[type="text"]', USERNAME)
 
-def save(data):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f)
+    # remplir mot de passe
+    page.fill('input[type="password"]', PASSWORD)
 
-def main():
-    client = Client(URL, username=USERNAME, password=PASSWORD)
+    # cliquer sur connexion
+    page.click('button')
 
-    homeworks = client.homework()
-    new_list = [hw.description for hw in homeworks]
+    page.wait_for_timeout(5000)
 
-    old_list = load_old()
+    print("Connecté à PRONOTE")
 
-    for hw in new_list:
-        if hw not in old_list:
-            send(f"Nouveau devoir : {hw}")
-
-    save(new_list)
-
-if __name__ == "__main__":
-    main()
+    browser.close()
