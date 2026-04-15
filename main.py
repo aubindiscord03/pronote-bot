@@ -45,9 +45,17 @@ def main():
 
         page.wait_for_timeout(5000)
 
-        print("Connexion effectuée")
+print("Connexion effectuée")
 
-        browser.close()
+# attendre que la page élève charge
+page.wait_for_timeout(5000)
+
+# récupérer le contenu HTML
+content = page.content()
+
+print("Page récupérée")
+
+browser.close()
 
 if __name__ == "__main__":
     main()
