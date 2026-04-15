@@ -48,8 +48,14 @@ def main():
 
         # 👇 TON AJOUT DOIT ÊTRE ICI
         page.wait_for_timeout(5000)
-        content = page.content()
-        print("Page récupérée")
+        # attendre que les devoirs apparaissent
+page.wait_for_timeout(5000)
+
+# récupérer tous les textes visibles
+texts = page.locator("body").inner_text()
+
+print("===== CONTENU PAGE =====")
+print(texts[:1000])  # limite pour éviter spam
 
         browser.close()
 
