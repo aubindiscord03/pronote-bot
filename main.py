@@ -46,16 +46,13 @@ def main():
 
         print("Connexion effectuée")
 
-        # 👇 TON AJOUT DOIT ÊTRE ICI
+        # 🔥 récupération contenu
         page.wait_for_timeout(5000)
-        # attendre que les devoirs apparaissent
-page.wait_for_timeout(5000)
 
-# récupérer tous les textes visibles
-texts = page.locator("body").inner_text()
+        texts = page.locator("body").inner_text()
 
-print("===== CONTENU PAGE =====")
-print(texts[:1000])  # limite pour éviter spam
+        print("===== CONTENU PAGE =====")
+        print(texts[:1000])
 
         browser.close()
 
