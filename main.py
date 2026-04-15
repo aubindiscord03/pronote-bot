@@ -1,8 +1,8 @@
 import os
 
 URL = os.getenv("PRONOTE_URL")
-USERNAME = os.getenv("PRONOTE_USERNAME")
-PASSWORD = os.getenv("PRONOTE_PASSWORD")
+USERNAME = os.getenv("PRONOTE_USER")
+PASSWORD = os.getenv("PRONOTE_PASS")
 
 print("===== DEBUG SECRETS =====")
 
