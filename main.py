@@ -21,7 +21,6 @@ def main():
 
         page = context.new_page()
 
-        # 🔥 Anti-bot
         page.add_init_script("""
         Object.defineProperty(navigator, 'webdriver', {
             get: () => undefined
@@ -35,7 +34,7 @@ def main():
 
         print("Page chargée")
 
-        # 🔑 Login
+        # LOGIN
         page.fill('input[type="text"]', USERNAME)
         page.fill('input[type="password"]', PASSWORD)
 
@@ -45,17 +44,15 @@ def main():
 
         page.wait_for_timeout(5000)
 
-print("Connexion effectuée")
+        print("Connexion effectuée")
 
-# attendre que la page élève charge
-page.wait_for_timeout(5000)
+        # 👇 TON AJOUT DOIT ÊTRE ICI
+        page.wait_for_timeout(5000)
+        content = page.content()
+        print("Page récupérée")
 
-# récupérer le contenu HTML
-content = page.content()
+        browser.close()
 
-print("Page récupérée")
-
-browser.close()
 
 if __name__ == "__main__":
     main()
