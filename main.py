@@ -51,16 +51,19 @@ def main():
 
         print("Ouverture PRONOTE...")
         page.goto(URL)
-        page.wait_for_load_state("networkidle")
-        page.wait_for_timeout(5000)
-        
-        # login
+
+        page.wait_for_timeout(8000)  # ⬅️ on augmente
+
+        print("Page chargée")
+
         page.fill('input[type="text"]', USERNAME)
         page.fill('input[type="password"]', PASSWORD)
+
         page.click('button:has-text("Se connecter")')
 
         page.wait_for_timeout(5000)
-        print("Connecté")
+
+        print("Connexion effectuée")
 
         # récupérer haut de page
         content = page.locator("body").inner_text()
