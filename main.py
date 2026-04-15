@@ -1,13 +1,53 @@
+from playwright.sync_api import sync_playwright
 import os
 
 URL = os.getenv("PRONOTE_URL")
 USERNAME = os.getenv("PRONOTE_USER")
 PASSWORD = os.getenv("PRONOTE_PASS")
 
-print("===== DEBUG SECRETS =====")
+def main():
+    with sync_playwright() as p:
+        browser = p.chromium.launch(
+            headless=True,
+            args=[
+                "--no-sandbox",
+                "--disable-blink-features=AutomationControlled"
+            ]
+        )
 
-print("URL:", URL if URL else "❌ NON DEFINI")
-print("USERNAME:", USERNAME if USERNAME else "❌ NON DEFINI")
-print("PASSWORD:", "✅ DEFINI" if PASSWORD else "❌ NON DEFINI")
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
+        )
 
-print("=========================")
+        page = context.new_page()
+
+        # 🔥 Anti-bot
+        page.add_init_script("""
+        Object.defineProperty(navigator, 'webdriver', {
+            get: () => undefined
+        })
+        """)
+
+        print("Ouverture de PRONOTE...")
+        page.goto(URL)
+
+        page.wait_for_timeout(5000)
+
+        print("Page chargée")
+
+        # 🔑 Login
+        page.fill('input[type="text"]', USERNAME)
+        page.fill('input[type="password"]', PASSWORD)
+
+        print("Identifiants remplis")
+
+        page.click('button[type="submit"]')
+
+        page.wait_for_timeout(5000)
+
+        print("Connexion effectuée")
+
+        browser.close()
+
+if __name__ == "__main__":
+    main()
