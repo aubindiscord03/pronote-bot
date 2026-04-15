@@ -41,7 +41,7 @@ def main():
 
         print("Identifiants remplis")
 
-        page.click('button[type="submit"]')
+        page.click('button:has-text("Se connecter")')
 
         page.wait_for_timeout(5000)
 
