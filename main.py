@@ -51,8 +51,9 @@ def main():
 
         print("Ouverture PRONOTE...")
         page.goto(URL)
-        page.wait_for_selector('input[type="text"]', timeout=15000)
-
+        page.wait_for_load_state("networkidle")
+        page.wait_for_timeout(5000)
+        
         # login
         page.fill('input[type="text"]', USERNAME)
         page.fill('input[type="password"]', PASSWORD)
