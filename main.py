@@ -3,6 +3,7 @@ import os
 import json
 import requests
 
+# 🔐 secrets
 URL = os.getenv("PRONOTE_URL")
 USERNAME = os.getenv("PRONOTE_USER")
 PASSWORD = os.getenv("PRONOTE_PASS")
@@ -12,6 +13,7 @@ CHAT_ID = os.getenv("CHAT_ID")
 
 FILE = "last.json"
 
+# 📦 stockage
 def load_last():
     try:
         with open(FILE, "r") as f:
@@ -23,6 +25,7 @@ def save_last(data):
     with open(FILE, "w") as f:
         json.dump(data, f)
 
+# 📲 telegram
 def send(msg):
     requests.get(
         f"https://api.telegram.org/bot{TOKEN}/sendMessage",
@@ -33,7 +36,10 @@ def main():
     with sync_playwright() as p:
         browser = p.chromium.launch(
             headless=True,
-            args=["--no-sandbox", "--disable-blink-features=AutomationControlled"]
+            args=[
+                "--no-sandbox",
+                "--disable-blink-features=AutomationControlled"
+            ]
         )
 
         context = browser.new_context(
@@ -52,37 +58,40 @@ def main():
         print("Ouverture PRONOTE...")
         page.goto(URL)
 
-        page.wait_for_timeout(8000)  # ⬅️ on augmente
+        # 🔥 attendre que tout charge (important)
+        page.wait_for_load_state("networkidle")
+        page.wait_for_timeout(8000)
 
         print("Page chargée")
 
+        # 🔑 LOGIN (simple et robuste)
         page.fill('input[type="text"]', USERNAME)
         page.fill('input[type="password"]', PASSWORD)
-
         page.click('button:has-text("Se connecter")')
 
         page.wait_for_timeout(5000)
 
         print("Connexion effectuée")
 
-        # récupérer haut de page
+        # 📄 récupérer contenu haut de page
         content = page.locator("body").inner_text()
         short = content[:500]
 
         print("===== DEBUG =====")
         print(short)
 
-        # trouver première ligne utile
+        # 🔍 trouver "dernier devoir"
         lines = short.split("\n")
 
         last_homework = ""
         for line in lines:
-            if len(line.strip()) > 15:
+            if len(line.strip()) > 20:
                 last_homework = line.strip()
                 break
 
         print("Dernier devoir détecté :", last_homework)
 
+        # 📊 comparaison
         old = load_last()
 
         if last_homework != old:
