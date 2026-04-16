@@ -31,38 +31,44 @@ def main():
         page.wait_for_load_state("networkidle")
         page.wait_for_timeout(5000)
 
-print("Page chargée")
+        print("Page chargée")
 
-# 🔍 vérifier si déjà connecté
-content = page.locator("body").inner_text()
+        # 🔍 vérifier si déjà connecté
+        content = page.locator("body").inner_text()
 
-if "Espace Élèves" in content:
-    print("Déjà connecté")
-else:
-    print("Connexion requise")
+        if "Espace Élèves" in content:
+            print("Déjà connecté")
 
-    # chercher le bon frame
-    frame = None
-    for f in page.frames:
-        try:
-            if f.locator('input[type="text"]').count() > 0:
-                frame = f
-                break
-        except:
-            pass
+        else:
+            print("Connexion requise")
 
-    if frame is None:
-        raise Exception("Impossible de trouver le login")
+            frame = None
 
-    frame.fill('input[type="text"]', USERNAME)
-    frame.fill('input[type="password"]', PASSWORD)
-    frame.click('button:has-text("Se connecter")')
+            for f in page.frames:
+                try:
+                    if f.locator('input[type="text"]').count() > 0:
+                        frame = f
+                        break
+                except:
+                    pass
 
-    page.wait_for_timeout(5000)
+            if frame is None:
+                raise Exception("Impossible de trouver le login")
 
-    print("Connexion effectuée")
+            frame.fill('input[type="text"]', USERNAME)
+            frame.fill('input[type="password"]', PASSWORD)
+            frame.click('button:has-text("Se connecter")')
 
-    browser.close()
+            page.wait_for_timeout(5000)
+
+            print("Connexion effectuée")
+
+        # 📄 récupérer contenu haut de page
+        content = page.locator("body").inner_text()
+        short = content[:500]
+
+        print("===== DEBUG =====")
+        print(short)
 
 if __name__ == "__main__":
     main()
