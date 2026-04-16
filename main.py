@@ -62,7 +62,7 @@ else:
 
     print("Connexion effectuée")
 
-        browser.close()
+    browser.close()
 
 if __name__ == "__main__":
     main()
