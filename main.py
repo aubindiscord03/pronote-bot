@@ -58,16 +58,34 @@ def main():
         print("Ouverture PRONOTE...")
         page.goto(URL)
 
-        # 🔥 attendre que tout charge (important)
         page.wait_for_load_state("networkidle")
-        page.wait_for_timeout(8000)
+        page.wait_for_timeout(5000)
 
         print("Page chargée")
 
-        # 🔑 LOGIN (simple et robuste)
-        page.fill('input[type="text"]', USERNAME)
-        page.fill('input[type="password"]', PASSWORD)
-        page.click('button:has-text("Se connecter")')
+# 🔥 chercher le bon frame automatiquement
+frame = None
+
+for f in page.frames:
+    try:
+        if f.locator('input[type="text"]').count() > 0:
+            frame = f
+            break
+    except:
+        pass
+
+if frame is None:
+    raise Exception("Aucun champ login trouvé")
+
+print("Frame trouvé")
+
+        # login dans le bon frame
+        frame.fill('input[type="text"]', USERNAME)
+        frame.fill('input[type="password"]', PASSWORD)
+
+        print("Identifiants remplis")
+
+        frame.click('button:has-text("Se connecter")')
 
         page.wait_for_timeout(5000)
 
