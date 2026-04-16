@@ -16,6 +16,10 @@ def main():
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         )
 
+        context.set_extra_http_headers({
+            "Accept-Language": "fr-FR,fr;q=0.9"
+        })
+
         page = context.new_page()
 
         # anti-bot
@@ -33,39 +37,33 @@ def main():
 
         print("Page chargée")
 
-        # 🔍 vérifier si déjà connecté
+        # 🔑 LOGIN FORCÉ (simple et fiable)
+        print("Connexion en cours...")
+
+        frame = None
+
+        for f in page.frames:
+            try:
+                if f.locator('input[type="text"]').count() > 0:
+                    frame = f
+                    break
+            except:
+                pass
+
+        if frame is None:
+            raise Exception("Login introuvable")
+
+        frame.fill('input[type="text"]', USERNAME)
+        frame.fill('input[type="password"]', PASSWORD)
+        frame.click('button:has-text("Se connecter")')
+
+        page.wait_for_timeout(5000)
+
+        print("Connexion effectuée")
+
+        # 📄 DEBUG (haut de page)
         content = page.locator("body").inner_text()
-
-        if "Espace Élèves" in content:
-            print("Déjà connecté")
-
-        else:
-            print("Connexion requise")
-
-            frame = None
-
-            for f in page.frames:
-                try:
-                    if f.locator('input[type="text"]').count() > 0:
-                        frame = f
-                        break
-                except:
-                    pass
-
-            if frame is None:
-                raise Exception("Impossible de trouver le login")
-
-            frame.fill('input[type="text"]', USERNAME)
-            frame.fill('input[type="password"]', PASSWORD)
-            frame.click('button:has-text("Se connecter")')
-
-            page.wait_for_timeout(5000)
-
-            print("Connexion effectuée")
-
-        # 📄 récupérer contenu haut de page
-        content = page.locator("body").inner_text()
-        short = content[:500]
+        short = content[:800]
 
         print("===== DEBUG =====")
         print(short)
