@@ -1,45 +1,15 @@
 from playwright.sync_api import sync_playwright
 import os
-import json
-import requests
 
-# 🔐 secrets
 URL = os.getenv("PRONOTE_URL")
 USERNAME = os.getenv("PRONOTE_USER")
 PASSWORD = os.getenv("PRONOTE_PASS")
-
-TOKEN = os.getenv("TELEGRAM_TOKEN")
-CHAT_ID = os.getenv("CHAT_ID")
-
-FILE = "last.json"
-
-# 📦 stockage
-def load_last():
-    try:
-        with open(FILE, "r") as f:
-            return json.load(f)
-    except:
-        return ""
-
-def save_last(data):
-    with open(FILE, "w") as f:
-        json.dump(data, f)
-
-# 📲 telegram
-def send(msg):
-    requests.get(
-        f"https://api.telegram.org/bot{TOKEN}/sendMessage",
-        params={"chat_id": CHAT_ID, "text": msg}
-    )
 
 def main():
     with sync_playwright() as p:
         browser = p.chromium.launch(
             headless=True,
-            args=[
-                "--no-sandbox",
-                "--disable-blink-features=AutomationControlled"
-            ]
+            args=["--no-sandbox", "--disable-blink-features=AutomationControlled"]
         )
 
         context = browser.new_context(
@@ -63,23 +33,23 @@ def main():
 
         print("Page chargée")
 
-# 🔥 chercher le bon frame automatiquement
-frame = None
+        # 🔥 trouver le bon frame
+        frame = None
 
-for f in page.frames:
-    try:
-        if f.locator('input[type="text"]').count() > 0:
-            frame = f
-            break
-    except:
-        pass
+        for f in page.frames:
+            try:
+                if f.locator('input[type="text"]').count() > 0:
+                    frame = f
+                    break
+            except:
+                pass
 
-if frame is None:
-    raise Exception("Aucun champ login trouvé")
+        if frame is None:
+            raise Exception("Aucun champ login trouvé")
 
-print("Frame trouvé")
+        print("Frame trouvé")
 
-        # login dans le bon frame
+        # 🔑 LOGIN
         frame.fill('input[type="text"]', USERNAME)
         frame.fill('input[type="password"]', PASSWORD)
 
@@ -91,33 +61,10 @@ print("Frame trouvé")
 
         print("Connexion effectuée")
 
-        # 📄 récupérer contenu haut de page
-        content = page.locator("body").inner_text()
-        short = content[:500]
+        browser.close()
 
-        print("===== DEBUG =====")
-        print(short)
-
-        # 🔍 trouver "dernier devoir"
-        lines = short.split("\n")
-
-        last_homework = ""
-        for line in lines:
-            if len(line.strip()) > 20:
-                last_homework = line.strip()
-                break
-
-        print("Dernier devoir détecté :", last_homework)
-
-        # 📊 comparaison
-        old = load_last()
-
-        if last_homework != old:
-            print("NOUVEAU DEVOIR")
-            save_last(last_homework)
-            send(f"Nouveau devoir : {last_homework}")
-        else:
-            print("Aucun nouveau devoir")
+if __name__ == "__main__":
+    main()
 
         browser.close()
 
