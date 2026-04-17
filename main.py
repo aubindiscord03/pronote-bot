@@ -30,23 +30,27 @@ def main():
         print("Ouverture PRONOTE...")
         page.goto(URL, wait_until="domcontentloaded")
 
-        # attendre iframe (TRÈS IMPORTANT)
-        page.wait_for_selector("iframe", timeout=15000)
-
         print("Connexion...")
 
-        frame = page.frame_locator("iframe").first
+        # =========================
+        # 🔍 DETECTION iframe OU NON
+        # =========================
+        page.wait_for_timeout(3000)
 
-        # attendre les inputs dans le frame
+        if page.locator("iframe").count() > 0:
+            print("Mode iframe détecté")
+            frame = page.frame_locator("iframe").first
+        else:
+            print("Mode sans iframe")
+            frame = page
+
+        # =========================
+        # 🔑 LOGIN
+        # =========================
         frame.locator('input[type="text"]').wait_for(timeout=15000)
-
-        # petit délai pour stabilité
-        page.wait_for_timeout(1000)
 
         frame.locator('input[type="text"]').fill(USERNAME)
         frame.locator('input[type="password"]').fill(PASSWORD)
-
-        page.wait_for_timeout(500)
 
         frame.locator('button').click()
 
@@ -61,7 +65,6 @@ def main():
 
         try:
             bloc = page.locator("text=Travail à faire pour les prochains jours").locator("xpath=..")
-
             elements = bloc.locator("div")
 
             for i in range(elements.count()):
@@ -84,7 +87,6 @@ def main():
 
         try:
             bloc_notes = page.locator("text=Dernières notes").locator("xpath=..")
-
             elements_notes = bloc_notes.locator("div")
 
             for i in range(elements_notes.count()):
@@ -101,10 +103,6 @@ def main():
             print("Bloc notes introuvable")
 
         browser.close()
-
-
-if __name__ == "__main__":
-    main()
 
 
 if __name__ == "__main__":
