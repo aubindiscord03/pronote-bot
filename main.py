@@ -30,14 +30,24 @@ def main():
         print("Ouverture PRONOTE...")
         page.goto(URL, wait_until="domcontentloaded")
 
-        page.wait_for_selector('input[type="text"]', timeout=15000)
+        # attendre iframe (TRÈS IMPORTANT)
+        page.wait_for_selector("iframe", timeout=15000)
 
         print("Connexion...")
 
         frame = page.frame_locator("iframe").first
 
+        # attendre les inputs dans le frame
+        frame.locator('input[type="text"]').wait_for(timeout=15000)
+
+        # petit délai pour stabilité
+        page.wait_for_timeout(1000)
+
         frame.locator('input[type="text"]').fill(USERNAME)
         frame.locator('input[type="password"]').fill(PASSWORD)
+
+        page.wait_for_timeout(500)
+
         frame.locator('button').click()
 
         page.wait_for_load_state("networkidle")
@@ -91,6 +101,10 @@ def main():
             print("Bloc notes introuvable")
 
         browser.close()
+
+
+if __name__ == "__main__":
+    main()
 
 
 if __name__ == "__main__":
