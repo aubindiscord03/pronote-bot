@@ -9,64 +9,89 @@ def main():
     with sync_playwright() as p:
         browser = p.chromium.launch(
             headless=True,
-            args=["--no-sandbox", "--disable-blink-features=AutomationControlled"]
+            args=[
+                "--no-sandbox",
+                "--disable-blink-features=AutomationControlled"
+            ]
         )
 
         context = browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
+            locale="fr-FR"
         )
-
-        context.set_extra_http_headers({
-            "Accept-Language": "fr-FR,fr;q=0.9"
-        })
 
         page = context.new_page()
 
-        # anti-bot
+        # anti-bot léger
         page.add_init_script("""
-        Object.defineProperty(navigator, 'webdriver', {
-            get: () => undefined
-        })
+        Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
         """)
 
         print("Ouverture PRONOTE...")
-        page.goto(URL)
+        page.goto(URL, wait_until="domcontentloaded")
+
+        page.wait_for_selector('input[type="text"]', timeout=15000)
+
+        print("Connexion...")
+
+        frame = page.frame_locator("iframe").first
+
+        frame.locator('input[type="text"]').fill(USERNAME)
+        frame.locator('input[type="password"]').fill(PASSWORD)
+        frame.locator('button').click()
 
         page.wait_for_load_state("networkidle")
-        page.wait_for_timeout(5000)
 
-        print("Page chargée")
+        print("Connecté")
 
-        # 🔑 LOGIN FORCÉ (simple et fiable)
-        print("Connexion en cours...")
+        # =========================
+        # 📚 DEBUG DEVOIRS
+        # =========================
+        print("\n===== DEBUG DEVOIRS =====")
 
-        frame = None
+        try:
+            bloc = page.locator("text=Travail à faire pour les prochains jours").locator("xpath=..")
 
-        for f in page.frames:
-            try:
-                if f.locator('input[type="text"]').count() > 0:
-                    frame = f
-                    break
-            except:
-                pass
+            elements = bloc.locator("div")
 
-        if frame is None:
-            raise Exception("Login introuvable")
+            for i in range(elements.count()):
+                try:
+                    text = elements.nth(i).inner_text()
 
-        frame.fill('input[type="text"]', USERNAME)
-        frame.fill('input[type="password"]', PASSWORD)
-        frame.click('button:has-text("Se connecter")')
+                    if len(text) < 200 and len(text) > 10:
+                        print("----")
+                        print(text)
 
-        page.wait_for_timeout(5000)
+                except:
+                    pass
+        except:
+            print("Bloc devoirs introuvable")
 
-        print("Connexion effectuée")
+        # =========================
+        # 📊 DEBUG NOTES
+        # =========================
+        print("\n===== DEBUG NOTES =====")
 
-        # 📄 DEBUG (haut de page)
-        content = page.locator("body").inner_text()
-        short = content[:800]
+        try:
+            bloc_notes = page.locator("text=Dernières notes").locator("xpath=..")
 
-        print("===== DEBUG =====")
-        print(short)
+            elements_notes = bloc_notes.locator("div")
+
+            for i in range(elements_notes.count()):
+                try:
+                    text = elements_notes.nth(i).inner_text()
+
+                    if len(text) < 150 and len(text) > 10:
+                        print("----")
+                        print(text)
+
+                except:
+                    pass
+        except:
+            print("Bloc notes introuvable")
+
+        browser.close()
+
 
 if __name__ == "__main__":
     main()
